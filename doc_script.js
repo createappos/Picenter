@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const code = document.getElementById('code-content').value;
 
         // IMPORTANT: Replace this with the public URL of your deployed backend server
-        const backendUrl = 'https://your-live-backend-url.onrender.com'; // <-- ⚠️ UPDATE THIS URL
+        const backendUrl = 'https://your-actual-backend-url.onrender.com'; // <-- ⚠️ UPDATE THIS WITH YOUR REAL URL
 
         try {
             const response = await fetch(`${backendUrl}/api/save-to-github`, {
@@ -54,9 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             // On error, re-enable the button and show the error.
-            console.error('Error saving project:', error);
-            alert(`An error occurred: ${error.message}`);
-        } finally {
+            let userMessage = `An error occurred: ${error.message}`;
+            // Provide a more helpful message for the common "Failed to fetch" error.
+            if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                userMessage = 'Network Error: Could not connect to the server. Please ensure the backend URL is correct and the server is running.';
+            }
+            console.error('Error saving project:', error); // Keep detailed error in console
+            alert(userMessage); // Show user-friendly message
+
+            // Reset the button state only on failure
             submitButton.disabled = false;
             submitButton.innerHTML = originalButtonText;
         }

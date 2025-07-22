@@ -6,24 +6,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let allProjects = [];
     // IMPORTANT: Replace this with the public URL of your deployed backend server
-    const backendUrl = 'https://your-live-backend-url.onrender.com'; // <-- ⚠️ UPDATE THIS URL
+    const backendUrl = 'https://your-actual-backend-url.onrender.com'; // <-- ⚠️ UPDATE THIS WITH YOUR REAL URL
 
     try {
         const response = await fetch(`${backendUrl}/api/projects`);
         if (!response.ok) {
             // Provide a more specific error if the fetch fails
-            throw new Error(`Failed to load projects. Server responded with status: ${response.status}`);
+            throw new Error(`Server responded with status: ${response.status}`);
         }
         allProjects = await response.json();
     } catch (error) {
+        let userMessage = `<p>Could not load projects. ${error.message}</p>`;
         // This catch block will now handle both network errors and the JSON parsing error
-        if (error instanceof SyntaxError) {
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+            userMessage = `<p><strong>Network Error:</strong> Could not connect to the project server.</p><p>Please ensure the backend URL is correct and the server is running.</p>`;
+        } else if (error instanceof SyntaxError) {
             // This specifically catches the "Unexpected token '<'" error
             console.error("The server did not return valid JSON. It likely returned an HTML error page.");
-            error.message = "Could not connect to the project server. Please check the backend URL and ensure it's running.";
+            userMessage = `<p>An unexpected response was received from the server.</p>`;
         }
-        console.error("Error fetching projects:", error);
-        projectGrid.innerHTML = `<div class="no-project-card"><i class="fa-solid fa-exclamation-triangle fa-4x"></i><p>Could not load projects from GitHub. Is the server running?</p></div>`;
+        console.error("Error fetching projects:", error); // Keep detailed error in console for debugging
+        projectGrid.innerHTML = `<div class="no-project-card"><i class="fa-solid fa-exclamation-triangle fa-4x"></i>${userMessage}</div>`;
         return;
     }
 
